@@ -1,56 +1,76 @@
 ﻿module Mario.Server
 
 open System.Net.Sockets
+open System.Net
 open Mario.Socket
+open Mario.LoggerAgent
+open Mario.HttpContext
+open Mario.Dispatcher
 
-let PORT = 65000
 
-let serverSocket = Socket.createListening PORT
+type Mario() =     
 
-//let income = ref null
+    static member Start(?port) =
 
-Socket.Incoming |> Observable.add(fun s ->
-  printfn "socket accepted"
-  //ignore incoming sockets, except for the first one
- // if box !income = null then income := s else printfn "forget it, we have one already"
-  //accept more sockets...
-//  Socket.accept serverSocket
-)
-Socket.Connected |> Observable.add (fun s ->
-  printfn "socket connected [%s:%d]" (Socket.ip s) (Socket.port s)
-)
-Socket.Disconnected |> Observable.add (fun (s, reason) ->
-  printfn "socket purposely disconnected [%s:%d] because %s" (Socket.ip s) (Socket.port s) reason
-)
-Socket.SentData|> Observable.add (fun (s, n) ->
-  printfn "socket [%s:%d] sent %d bytes" (Socket.ip s) (Socket.port s) n
-)
-Socket.ReceivedData |> Observable.add (fun (s, n) ->
-  printfn "socket [%s:%d] received %d bytes" (Socket.ip s) (Socket.port s) n
-)
+        let create() =
+            new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
 
-Socket.accept serverSocket
+        let createListeningExtended ip port n =
+            let s = create()
+            let ip =
+                match ip with
+                | Some s -> IPAddress.Parse s
+                | None -> IPAddress.Loopback
+            s.Bind(new IPEndPoint(ip, port))
+            s.Listen(n)
+            s
+        let createListening port = createListeningExtended None port (int SocketOptionName.MaxConnections)
+        let port = defaultArg port 8787
+        let serverSocket = createListening port
+        let buffer = Array.create 1000 0uy
+
+        ///TODO make writeResponse to global buffer POOL
+        let writeResponse (s:string) =            
+           let response = "HTTP/1.1 200 OK\r\nServer: MarIO/2009-09-09\r\nContent-Type: application/x-javascript\r\nContent-Length: " + s.Length.ToString() + "\r\n\r\n" + s;
+           System.Text.Encoding.UTF8.GetBytes response 
+
+        let logger = new Logger(LogLevel.Debug)
+        logger.LogDebug "starting server"    
+        async {
+            try
+                while (true) do
+                    let! clientSocket = Mario.Socket.Accept serverSocket    
+                    logger.LogDebug "client connected"
+                    let buf = new System.ArraySegment<byte>(buffer, 0, 1000)
+                    let! res = Mario.Socket.Receive clientSocket buf             
+                    let strings = System.Text.Encoding.UTF8.GetString (buf.Array, 0, res)                    
+                    logger.LogDebug (sprintf "recieved %A bytes" res)  
+                    logger.LogDebug strings
+                   // let handleRequest = defaultArg processContext (fun x -> new ResponseData{Json="Hello World!"})
+                    let bufR = writeResponse "\"Hello World!\""
+                    let send = new System.ArraySegment<byte>(bufR, 0, bufR.GetLength(0))
+                    do! Mario.Socket.Send clientSocket send     
+                    logger.LogDebug "sending" 
+            with
+            | ex ->
+                logger.LogError (sprintf "exception %A" ex.Message)
+        } |> Async.Start // run in the thread pool     
+  
+ 
+//printfn "waiting"
+  
+//System.Console.ReadKey(true) |> ignore
+
+// let handler x:RequestPath y:RequestMethod z:RequestQuery :string =
+//    match x with
+//          | "getSomeFunction.fs", POST -> "some"
+//          | "save", GET -> "some"
+
+// start mario at localhost
+// Mario.Start(80, handler)
+//
+Mario.Start()
 
 printfn "waiting"
-    
+  
 System.Console.ReadKey(true) |> ignore
-
-//
-//let socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-//socket |> Socket.connect "127.0.0.1" PORT
-//
-//let socket2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-//socket2 |> Socket.connect "127.0.0.1" PORT
-//
-//let buffer = Array.create 100 0uy
-//let buffer2 = Array.create 500 1uy
-//
-//!income |> Socket.send buffer 0 buffer.Length
-////nothing should happen, the event will be triggered when all data will have been read
-//socket |> Socket.receiveUntil buffer2 0 buffer2.Length
-//!income |> Socket.send buffer 0 buffer.Length
-//!income |> Socket.send buffer 0 buffer.Length
-//!income |> Socket.send buffer 0 buffer.Length
-//!income |> Socket.send buffer 0 buffer.Length //the ReceivedData is emitted here
-//
-

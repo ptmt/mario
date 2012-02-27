@@ -1,0 +1,1 @@
+mario.exe > 1.log
