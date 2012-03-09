@@ -5,13 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6b3b4f16-c92a-4bf6-a8ab-c80a1bd31587}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>mario</RootNamespace>
-    <AssemblyName>mario</AssemblyName>
+    <ProjectGuid>{316dda03-35fd-4d07-8b8b-9902fbaf712e}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>sampleapp</RootNamespace>
+    <AssemblyName>sampleapp</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
-    <Name>mario</Name>
+    <Name>sampleapp</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,8 +21,8 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Debug\mario.XML</DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Debug\sampleapp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -31,36 +31,28 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Release\mario.XML</DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Release\sampleapp.XML</DocumentationFile>
   </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
-    <Compile Include="LoggerAgent.fs" />
-    <Compile Include="AsyncSocket.fsi" />
-    <Compile Include="AsyncSocket.fs" />
-    <Compile Include="HttpContext.fs" />
-    <Compile Include="WebServer.fs" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="FParsec">
-      <HintPath>lib\FParsec.dll</HintPath>
-    </Reference>
-    <Reference Include="FParsecCS">
-      <HintPath>lib\FParsecCS.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Net" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Web">
-      <HintPath>lib\System.Web.dll</HintPath>
-    </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\mario.fsproj">
+      <Name>mario</Name>
+      <Project>{6d69c0f9-e58e-4d4d-8e20-01dd00b04894}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

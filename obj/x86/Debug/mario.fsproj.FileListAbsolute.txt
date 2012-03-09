@@ -1,6 +1,0 @@
-D:\projects\touty\mario\bin\Debug\mario.XML
-D:\projects\touty\mario\bin\Debug\mario.exe
-D:\projects\touty\mario\bin\Debug\mario.pdb
-D:\projects\touty\mario\obj\x86\Debug\ResolveAssemblyReference.cache
-D:\projects\touty\mario\obj\x86\Debug\mario.exe
-D:\projects\touty\mario\obj\x86\Debug\mario.pdb

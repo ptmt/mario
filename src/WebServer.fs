@@ -1,16 +1,14 @@
-﻿module Mario.Server
+﻿module Mario.WebServer
 
 open System.Net.Sockets
 open System.Net
 open Mario.Socket
 open Mario.LoggerAgent
 open Mario.HttpContext
-open Mario.Dispatcher
-
 
 type Mario() =     
 
-    static member Start(?port) =
+    static member Start(handler : HttpRequest -> HttpResponse, ?port) =
 
         let create() =
             new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
@@ -34,6 +32,16 @@ type Mario() =
            let response = "HTTP/1.1 200 OK\r\nServer: MarIO/2009-09-09\r\nContent-Type: application/x-javascript\r\nContent-Length: " + s.Length.ToString() + "\r\n\r\n" + s;
            System.Text.Encoding.UTF8.GetBytes response 
 
+        let getResponse (s:string) =
+            let req = ParseRequest s
+            match req with
+                | None -> writeResponse "parsing request error"
+                | _ -> 
+                    let res = handler req.Value
+                    writeResponse res.Json
+
+                        
+
         let logger = new Logger(LogLevel.Debug)
         logger.LogDebug "starting server"    
         async {
@@ -47,30 +55,19 @@ type Mario() =
                     logger.LogDebug (sprintf "recieved %A bytes" res)  
                     logger.LogDebug strings
                    // let handleRequest = defaultArg processContext (fun x -> new ResponseData{Json="Hello World!"})
-                    let bufR = writeResponse "\"Hello World!\""
+                    
+                    let bufR = getResponse strings
                     let send = new System.ArraySegment<byte>(bufR, 0, bufR.GetLength(0))
                     do! Mario.Socket.Send clientSocket send     
                     logger.LogDebug "sending" 
             with
             | ex ->
                 logger.LogError (sprintf "exception %A" ex.Message)
-        } |> Async.Start // run in the thread pool     
+        } |> Async.Start // run in the thread pool    
+        
+        printfn "keypress for exit"
+  
+        System.Console.ReadKey(true) |> ignore
+ 
   
  
-//printfn "waiting"
-  
-//System.Console.ReadKey(true) |> ignore
-
-// let handler x:RequestPath y:RequestMethod z:RequestQuery :string =
-//    match x with
-//          | "getSomeFunction.fs", POST -> "some"
-//          | "save", GET -> "some"
-
-// start mario at localhost
-// Mario.Start(80, handler)
-//
-Mario.Start()
-
-printfn "waiting"
-  
-System.Console.ReadKey(true) |> ignore
