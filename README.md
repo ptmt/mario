@@ -1,6 +1,7 @@
-﻿##mar.io
+﻿
+#mar.io
 
-Асинхронный веб-сервер, использующий IO Completion Port и Async-возможности f#.
+Легкий и крайне урезанный веб-сервер, использующий IO Completion Port и Async-возможности f#. 
 
 ##Getting Started
     
@@ -16,4 +17,4 @@
 
     Mario.Start(myHandler)
 
-And type in browser `http://localhost:8787`
+And type in browser `http://localhost:8787` for your first web response.
