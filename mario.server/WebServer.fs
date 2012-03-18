@@ -66,7 +66,7 @@ type Mario() =
                 logger.LogError (sprintf "exception %A" ex.Message)
         } |> Async.Start // run in the thread pool    
         
-        printfn "keypress for exit"
+        printfn "starting mario.server at localhost:%i" port
   
         System.Console.ReadKey(true) |> ignore
  
