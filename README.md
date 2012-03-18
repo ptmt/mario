@@ -1,9 +1,12 @@
-﻿
-#mar.io
+﻿#mar.io
 
-Легкий и крайне урезанный веб-сервер, использующий IO Completion Port и Async-возможности f#. 
+High perfomance, easy, small, http application server for JSON-processing. 
+
+Preview Version
 
 ##Getting Started
+
+Create F# console application:
     
     open Mario.HttpContext
     open Mario.WebServer
