@@ -19,7 +19,7 @@ type Mario() =
             let ip =
                 match ip with
                 | Some s -> IPAddress.Parse s
-                | None -> IPAddress.Loopback
+                | None -> IPAddress.Any
             s.Bind(new IPEndPoint(ip, port))
             s.Listen(n)
             s
