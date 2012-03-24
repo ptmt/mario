@@ -8,9 +8,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>mario.server</RootNamespace>
     <AssemblyName>mario.server</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <Name>mario.server</Name>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,16 +42,13 @@
     <Compile Include="LoggerAgent.fs" />
     <Compile Include="HttpContext.fs" />
     <Compile Include="WebServer.fs" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FParsec">
-      <HintPath>..\packages\FParsec.0.9.1.1\lib\net40\FParsec.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\lib\FParsec.dll</HintPath>
     </Reference>
     <Reference Include="FParsecCS">
-      <HintPath>..\packages\FParsec.0.9.1.1\lib\net40\FParsecCS.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\lib\FParsecCS.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
