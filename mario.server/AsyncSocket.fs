@@ -25,6 +25,9 @@
             let k (args: A) =
                 match args.SocketError with
                 | System.Net.Sockets.SocketError.Success ->
+                  //  match args.Buffer with
+                  //      | null -> printfn "accept"
+                  //      | _ -> printfn "[[[bytes transferred %A]]]" (System.Text.Encoding.UTF8.GetString (args.Buffer, 0, args.Buffer.GetLength(0))  )                         
                     let result = select args
                   //  printfn "asyncdo operation success"
                     args.Dispose()
@@ -32,12 +35,13 @@
                 | e ->
                     args.Dispose()
                     error (SocketIssue e)
+                 //   printfn "%A" (SocketIssue e)
             args.add_Completed(System.EventHandler<_>(fun _ -> k)) // asynchronously
             if not (op args) then
                 k args // synchronyously
 
     /// Prepares the arguments by setting the buffer.
-    let inline setBuffer (buf: B) (args: A) =
+    let inline setBuffer (buf: B) (args: A) =     
         args.SetBuffer(buf.Array, buf.Offset, buf.Count)
 
     let Accept (socket: Socket) =
