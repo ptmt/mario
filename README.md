@@ -1,4 +1,4 @@
-﻿#mar.io
+#mar.io
 
 
 High perfomance, easy, small, http application server for JSON-processing. 
