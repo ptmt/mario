@@ -16,8 +16,8 @@ Create F# console application:
         match req.Method with
            | HttpMethod.GET -> { Json = "Yet Another GET Request" }
            | HttpMethod.POST -> { Json = req.Body }
-           | _ -> { Json = "Others" }
+           | _ -> { Json = "Others Requests" }
 
-    Mario.Start(myHandler)
+    Mario.Start(myHandler, 8787)
 
-And type in browser `http://localhost:8787` for your first web response.
+And type in browser `http://localhost:8787` to see your first web response.
