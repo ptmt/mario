@@ -1,15 +1,26 @@
-﻿open Mario.Socket
-open Mario.LoggerAgent
-open Mario.HttpContext
+﻿open Mario.HttpContext
 open Mario.WebServer
+open System.Web.Script.Serialization
+
+let json t =
+    let js = new JavaScriptSerializer()    
+    js.Serialize(t)
 
 
-let myhandler (req:HttpRequest) : HttpResponse =
-    match req.Method with
-        | HttpMethod.GET -> { Json = "just get request" }
-        | HttpMethod.POST -> { Json = req.Body }
-        | _ -> { Json = "not some" }
+let session_add_test sid= 
+    Mario.Session.add sid "test_key" "test_value"
+    "added"
 
-Mario.Start(myhandler)
+let session_get_test sid = 
+    Mario.Session.get sid "test_key" |> json
 
 
+
+let myHandler (req:HttpRequest) : HttpResponse =
+    match req.Method, req.Uri with
+       | HttpMethod.GET, "/session_add.fs" -> { Json = session_add_test req.SessionId }
+       | HttpMethod.GET, "/session_get.fs" -> { Json = session_get_test req.SessionId }
+       | HttpMethod.POST, _ -> { Json = req.Body }
+       | _ -> { Json = "Not implemented request" }
+
+Mario.Start(myHandler, 80)

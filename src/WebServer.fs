@@ -7,6 +7,10 @@ open Mario.LoggerAgent
 open Mario.HttpContext
 open FParsec
 
+let LOG_PATH = "c:\\data\\mario.log"
+let MAX_ACCEPT_OPS = 8;
+let NUMBER_OF_SEND_OPS = 8;
+
 type Mario() =     
 
     static member Start(handler : HttpRequest -> HttpResponse, ?port) =
@@ -29,48 +33,63 @@ type Mario() =
         let buffer = Array.create 10000 0uy
 
         ///TODO make writeResponse to global buffer POOL
-        let writeResponse (s:string) =            
-           let response = "HTTP/1.1 200 OK\r\nServer: MarIO/0.0.1\r\nContent-Type: application/x-javascript\r\nContent-Length: " + (System.Text.Encoding.UTF8.GetBytes s).GetLength(0).ToString() + "\r\n\r\n" + s;
+        let writeResponse (s:string) (add: string) =            
+           
+           let response = "HTTP/1.1 200 OK\r\nServer: MarIO/0.1.0\r\nContent-Type: application/x-javascript" + add + "\r\nConnection: Keep-Alive\r\nContent-Length: " + (System.Text.Encoding.UTF8.GetBytes s).GetLength(0).ToString() + "\r\n\r\n" + s;
            System.Text.Encoding.UTF8.GetBytes response 
 
         let getResponse (s:string) =
-            let req = ParseRequest s
+            let req = ParseRequest s            
             match req with
-                | None -> writeResponse "parsing request error"
+                | None -> writeResponse "parsing request error" ""
                 | _ -> 
-                    let res = handler req.Value
-                    writeResponse res.Json
+                    let sessionID, add = 
+                        let cookies = req.Value.Headers |> List.filter (fun x-> x.Contains("Cookie: SID=")) 
+                        if cookies.Length > 0 then 
+                            let c = cookies |> List.head 
+                            (c.Replace("Cookie: SID=", ""), "")
+                        else
+                            let newses = Mario.Session.genSessionId
+                            (newses, "\r\nSet-Cookie:SID=" + newses)
+                    let res = handler { Method = req.Value.Method; Uri = req.Value.Uri; Headers = req.Value.Headers; Body = req.Value.Body; SessionId = sessionID}
+                    writeResponse res.Json add
 
                         
 
-        let logger = new Logger(LogLevel.Debug)
-        logger.LogDebug "starting server"    
+        use log = new LogAgent(LOG_PATH)
+        log.info (sprintf "starting mario.server at localhost:%i" port)
+
+        // create two socket pools
+        let poolOfRecSendEventArgs = new Mario.SocketPool.SocketAsyncEventArgsPool(NUMBER_OF_SEND_OPS);
+
+        let poolOfAcceptEventArgs = new Mario.SocketPool.SocketAsyncEventArgsPool(MAX_ACCEPT_OPS);
+
         async {
             try
                 while (true) do
-                    let! clientSocket = Mario.Socket.Accept serverSocket    
-                //    logger.LogDebug "client connected"
+                    let! clientSocket = Mario.Socket.Accept serverSocket poolOfAcceptEventArgs
+                    log.debug "client connected"
                     let buf = new System.ArraySegment<byte>(buffer, 0, 10000)
-                    let! res = Mario.Socket.Receive clientSocket buf             
-                    let strings = System.Text.Encoding.UTF8.GetString (buf.Array, 0, res)                    
-              //      logger.LogDebug (sprintf "recieved %A bytes" res)  
-             //       logger.LogDebug strings
-                   // let handleRequest = defaultArg processContext (fun x -> new ResponseData{Json="Hello World!"})
-                    
+                    let! res = Mario.Socket.Receive clientSocket buf poolOfRecSendEventArgs             
+                    let strings = System.Text.Encoding.UTF8.GetString (buf.Array, 0, res)                                        
+                    log.debug (sprintf "recieved %A bytes" res)  
+            
                     let bufR = getResponse strings
-                 //   let stringsR = System.Text.Encoding.UTF8.GetString (bufR, 0, bufR.GetLength(0))      
-                 //   logger.LogDebug (sprintf "sending %A" stringsR)
+               
+                    log.debug "response parsed successfully, prepare to socket send"
                     let send = new System.ArraySegment<byte>(bufR, 0, bufR.GetLength(0))
-                    do! Mario.Socket.Send clientSocket send     
-             //       logger.LogDebug "Socket.Send, loop end" 
+                    do! Mario.Socket.Send clientSocket send poolOfRecSendEventArgs     
+                    clientSocket.Close()
+                    log.debug "clientSocket.Close()" 
+                    //
             with
             | ex ->
-                logger.LogError (sprintf "exception %A" ex.Message)
+                log.error (sprintf "exception %A" ex.Message)
         } |> Async.Start // run in the thread pool    
         
-        printfn "starting mario.server at localhost:%i" port
+        printfn "starting mario.server at localhost:%i .." port
   
         System.Console.ReadKey(true) |> ignore
- 
+        log.flush()
   
  

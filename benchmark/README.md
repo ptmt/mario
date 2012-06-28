@@ -1,0 +1,1 @@
+I used apache benchmarking with following instruction: http://gwan.com/en_apachebench_httperf.html

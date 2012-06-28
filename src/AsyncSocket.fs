@@ -1,6 +1,7 @@
 ﻿module Mario.Socket 
     open System.Net.Sockets
     open System.Net
+    open Mario.SocketPool
 
     type A = System.Net.Sockets.SocketAsyncEventArgs
     type B = System.ArraySegment<byte>
@@ -18,38 +19,45 @@
     let inline asyncDo 
         (op: A -> bool)
         (prepare: A -> unit)
-        (select: A -> 'T) =
+        (select: A -> 'T)
+        (pool:SocketAsyncEventArgsPool) =
+
         Async.FromContinuations <| fun (ok, error, _) ->
-            let args = new A()
+            let args =
+                if pool.Count > 0 
+                then 
+                    //printfn "pop saea"
+                    pool.Pop()
+                else
+                    //printfn "new saea"
+                    new A()                  
+            
             prepare args
-            let k (args: A) =
+            let processSocket (args: A) =
                 match args.SocketError with
-                | System.Net.Sockets.SocketError.Success ->
-                  //  match args.Buffer with
-                  //      | null -> printfn "accept"
-                  //      | _ -> printfn "[[[bytes transferred %A]]]" (System.Text.Encoding.UTF8.GetString (args.Buffer, 0, args.Buffer.GetLength(0))  )                         
+                | System.Net.Sockets.SocketError.Success ->                              
                     let result = select args
-                  //  printfn "asyncdo operation success"
-                    args.Dispose()
+                
+                   // pool.Push args
                     ok result
                 | e ->
-                    args.Dispose()
+                  //  args.AcceptSocket.Close()
+                   // pool.Push args
                     error (SocketIssue e)
-                 //   printfn "%A" (SocketIssue e)
-            args.add_Completed(System.EventHandler<_>(fun _ -> k)) // asynchronously
+                 
+            args.add_Completed(System.EventHandler<_>(fun _ -> processSocket)) // asynchronously
             if not (op args) then
-                k args // synchronyously
+                processSocket args // synchronyously
 
     /// Prepares the arguments by setting the buffer.
     let inline setBuffer (buf: B) (args: A) =     
         args.SetBuffer(buf.Array, buf.Offset, buf.Count)
 
-    let Accept (socket: Socket) =
-        asyncDo socket.AcceptAsync ignore (fun a -> a.AcceptSocket)
+    let Accept (socket: Socket) (pool: SocketAsyncEventArgsPool) =
+        asyncDo socket.AcceptAsync ignore (fun a -> a.AcceptSocket) pool
 
-    let Receive (socket: Socket) (buf: B) =
-        asyncDo socket.ReceiveAsync (setBuffer buf)
-            (fun a -> a.BytesTransferred)
+    let Receive (socket: Socket) (buf: B) (pool: SocketAsyncEventArgsPool)=
+        asyncDo socket.ReceiveAsync (setBuffer buf) (fun a -> a.BytesTransferred) pool
 
-    let Send (socket: Socket) (buf: B) =
-        asyncDo socket.SendAsync (setBuffer buf) ignore
+    let Send (socket: Socket) (buf: B) (pool: SocketAsyncEventArgsPool)=
+        asyncDo socket.SendAsync (setBuffer buf) ignore pool

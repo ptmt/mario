@@ -3,11 +3,9 @@
 
 High perfomance, easy, small, http application server for JSON-processing. 
 
-Preview Version
+This is Preview Version
 
-##Getting Started
-
-Create F# console application:
+For trying just create F# console application with referenced mario.server.dll:
     
     open Mario.HttpContext
     open Mario.WebServer
