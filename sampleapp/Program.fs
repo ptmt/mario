@@ -21,6 +21,6 @@ let myHandler (req:HttpRequest) : HttpResponse =
        | HttpMethod.GET, "/session_add.fs" -> { Json = session_add_test req.SessionId }
        | HttpMethod.GET, "/session_get.fs" -> { Json = session_get_test req.SessionId }
        | HttpMethod.POST, _ -> { Json = req.Body }
-       | _ -> { Json = "Not implemented request" }
+       | _ -> Mario.HttpUtility.badRequest
 
 Mario.Start(myHandler, 80)
