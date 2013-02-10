@@ -66,22 +66,22 @@ let internal parsehead<'a> : Parser<string, 'a> = pstring HttpMethod.HEAD.toStri
 let internal parsetrace<'a> : Parser<string, 'a> = pstring HttpMethod.TRACE.toString 
 let internal parseoptions<'a> : Parser<string, 'a> = pstring HttpMethod.OPTIONS.toString 
 
-let httpMethod<'a> : Parser<HttpMethod, 'a> =
+let httpMethod<'a> : Parser<HttpMethod, unit> =
   parseget <|> parsepost <|> parseput <|> parsedelete <|> parsehead <|> parseconnect <|> parsetrace <|> parseoptions |>> HttpMethod.fromString
 
-let notspaces: Parser<string, 'a> = 
+let notspaces: Parser<string, unit> = 
     manySatisfy (function ' '|'\t'| '\n' -> false | _ -> true)
 
-let noteol : Parser<string, 'a> =
+let noteol : Parser<string, unit> =
     manySatisfy (function '\n' | '\r' -> false | _ ->true)
 
 let httpRequestUri =
     spaces >>. notspaces
 
-let httpHeaders: Parser<string list, 'a> =
+let httpHeaders: Parser<string list, unit> =
     sepBy noteol newline
 
-let httpRequest : Parser<HttpRequest, 'a> =
+let httpRequest : Parser<HttpRequest, unit> =
     pipe3 httpMethod httpRequestUri httpHeaders (fun x y z -> {Method = x; Uri = y; Headers = z; Body = z.Item (z.Length - 1); SessionId = ""} )
 
 let parse p str =
