@@ -1,9 +1,9 @@
 #mar.io
 
 
-High perfomance, easy, small, http application server for JSON-processing. 
+Mario is a high perfomance and lightweight application server for JSON-processing. It written in F# and based on IO Completion Port (also worked under Mono).
 
-This is Preview Version
+Currently under development.
 
 For trying just create F# console application with referenced mario.server.dll:
     
@@ -15,8 +15,8 @@ For trying just create F# console application with referenced mario.server.dll:
         match req.Method with
            | HttpMethod.GET -> { Json = "Yet Another GET Request" }
            | HttpMethod.POST -> { Json = req.Body }
-           | _ -> { Json = "Others Requests" }
+           | _ -> { Json = "Not Implemented" }
 
     Mario.Start(myHandler, 8787)
 
-And type in browser `http://localhost:8787` to see your first web response.
+Compile it with FAKE or xbuild and type in browser `http://localhost:8787` to see your first HTTP-response.

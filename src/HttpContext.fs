@@ -100,5 +100,5 @@ let ParseRequest (rawData:string) : HttpRequest option =
     | Success(result, _, _)   -> 
         Some(result)
     | Failure(errorMsg, _, _) -> 
-        //printfn "Failure: %s" errorMsg
+        printfn "Failure: %s" errorMsg
         None
